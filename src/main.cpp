@@ -31,6 +31,7 @@ void setup() {
 }
 
 void loop() {
+  int count = 0;
   if(bleMouse.isConnected() && handled == false){
       if(pos.B.pressing == 1){
         bleMouse.press(pos.B.buttons);
@@ -41,7 +42,8 @@ void loop() {
       bleMouse.move(pos.B.x, pos.B.y, pos.B.wheel, pos.B.hWheel);
       handled = true;
       M5.Lcd.setCursor(0, 0);
-      M5.Lcd.printf("%d,%d,%d,%d        ", pos.B.x, pos.B.y, pos.B.hWheel, pos.B.hWheel);
+      M5.Lcd.printf("%d:%d,%d,%d,%d        ",count, pos.B.x, pos.B.y, pos.B.hWheel, pos.B.hWheel);
+      count++;
   }
 }
 
@@ -51,5 +53,7 @@ void onPacketReceived(const void* sender, const uint8_t* buffer, size_t size){
         pos.bytes[i] = buffer[i];
     }
     handled = false;
+    M5.Lcd.setCursor(20, 0);
+    M5.Lcd.printf("recieved");
   }
 }

@@ -24,7 +24,8 @@ bool handled = false;
 void setup() {
   M5.begin();
   myPacketSerial.setPacketHandler(&onPacketReceived);
-  myPacketSerial.begin(115200);
+  Serial.begin(115200);
+  myPacketSerial.setStream(&Serial);
   M5.Lcd.fillScreen(WHITE);
   M5.Lcd.setTextColor(BLACK, WHITE);
   bleMouse.begin();
@@ -32,6 +33,7 @@ void setup() {
 
 void loop() {
   int count = 0;
+  myPacketSerial.update();
   if(bleMouse.isConnected() && handled == false){
       if(pos.B.pressing == 1){
         bleMouse.press(pos.B.buttons);

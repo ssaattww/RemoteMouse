@@ -66,7 +66,8 @@ void serialTask(void *args){
       uint8_t tmpBuf[BUF_SIZE];
       size_t tmpSize;
       
-      tmpSize = Serial.readBytes(tmpBuf,7);
+      tmpSize = Serial.readBytesUntil(0x00, tmpBuf, BUF_SIZE);
+      // tmpSize = Serial.readBytes(tmpBuf,BUF_SIZE);
 
       portENTER_CRITICAL(&mutex);
       arrived = true;
@@ -133,6 +134,11 @@ void serialArrivedEvent(){
     }
     moveMouse();
     Serial.write(encoded,encodedSize);
+    M5.Lcd.setCursor(0, 50);
+    M5.Lcd.printf("%d:",encodedSize);
+    for(int i =0; i< encodedSize; i++)M5.Lcd.printf("%d ",encoded[i]);
+    M5.Lcd.printf("       ");
+    //M5.Lcd.printf("%d:%d,%d,%d,%d,%d,%d        ",decodedSize,decoded[0], decoded[1], decoded[2], decoded[3], decoded[4], decoded[5]);
   }
 }
 

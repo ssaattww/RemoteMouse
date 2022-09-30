@@ -42,21 +42,21 @@ void setup() {
   M5.Lcd.fillScreen(WHITE);
   M5.Lcd.setTextColor(BLACK, WHITE);
   bleMouse.begin();
-  Serial.begin(115200);
+  // Serial.begin(115200);
+  Serial.begin(9600);
   //xTaskCreatePinnedToCore(displayTask, "displayTask", 4096, NULL, 2, NULL, 1);
-  xTaskCreatePinnedToCore(serialTask, "serialTask", 4096, NULL, 4, NULL, 1);
-  xTaskCreatePinnedToCore(mouseTask, "mouseTask", 4096, NULL, 3, NULL, 1);
+  xTaskCreatePinnedToCore(serialTask, "serialTask", 4096, NULL, 8, NULL, 0);
+  xTaskCreatePinnedToCore(mouseTask, "mouseTask", 4096, NULL, 7, NULL, 0);
 }
 
 void loop() {
-  M5.Lcd.setCursor(0, 0);
   portENTER_CRITICAL(&mutex);
   int c = count;
   MousePos p = pos;
   portEXIT_CRITICAL(&mutex);
-
+  M5.Lcd.setCursor(0, 0);
   M5.Lcd.printf("%d:%d,%d,%d,%d        ",c, p.B.x, p.B.y, p.B.hWheel, p.B.hWheel);
-  delay(100);
+  delay(1000);
 }
 
 void serialTask(void *args){
@@ -67,7 +67,7 @@ void serialTask(void *args){
       size_t tmpSize;
       
       tmpSize = Serial.readBytesUntil(0x00, tmpBuf, BUF_SIZE);
-      // tmpSize = Serial.readBytes(tmpBuf,BUF_SIZE);
+      //tmpSize = Serial.readBytes(tmpBuf,BUF_SIZE);
 
       portENTER_CRITICAL(&mutex);
       arrived = true;
@@ -116,9 +116,9 @@ void moveMouse(){
 void serialArrivedEvent(){
   uint8_t decoded[BUF_SIZE];
   uint8_t encoded[BUF_SIZE];
+  uint8_t tmp[BUF_SIZE];
   size_t decodedSize = 0;
   if(arrived){
-    uint8_t tmp[BUF_SIZE];
     portENTER_CRITICAL(&mutex);
     for(int i =0; i<BUF_SIZE;i++)tmp[i] = buffer[i];
     decodedSize = COBS::decode(tmp, bufferSize, decoded);
@@ -126,18 +126,19 @@ void serialArrivedEvent(){
     portEXIT_CRITICAL(&mutex);
   }
   if(decodedSize!=0){
-    size_t encodedSize = COBS::encode(decoded, decodedSize, encoded);
-    if(decodedSize == 6){
-      for(int i=0;i<6;i++){
-        pos.bytes[i] = decoded[i];
-      }
-    }
+    // size_t encodedSize = COBS::encode(decoded, decodedSize, encoded);
+    // if(decodedSize == 6){
+    //   for(int i=0;i<6;i++){
+    //     pos.bytes[i] = decoded[i];
+    //   }
+    // }
     moveMouse();
-    Serial.write(encoded,encodedSize);
-    M5.Lcd.setCursor(0, 50);
-    M5.Lcd.printf("%d:",encodedSize);
-    for(int i =0; i< encodedSize; i++)M5.Lcd.printf("%d ",encoded[i]);
-    M5.Lcd.printf("       ");
+    // Serial.write(encoded,encodedSize);
+    Serial.write(tmp, bufferSize);
+    //M5.Lcd.setCursor(0, 50);
+    //M5.Lcd.printf("%d:",encodedSize);
+    //for(int i =0; i< encodedSize; i++)M5.Lcd.printf("%d ",encoded[i]);
+    //M5.Lcd.printf("       ");
     //M5.Lcd.printf("%d:%d,%d,%d,%d,%d,%d        ",decodedSize,decoded[0], decoded[1], decoded[2], decoded[3], decoded[4], decoded[5]);
   }
 }

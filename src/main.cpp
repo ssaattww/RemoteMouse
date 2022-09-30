@@ -65,8 +65,16 @@ void serialTask(void *args){
     if(Serial.available()>0){
       uint8_t tmpBuf[BUF_SIZE];
       size_t tmpSize;
-      
-      tmpSize = Serial.readBytesUntil(0x00, tmpBuf, BUF_SIZE);
+      int i = 0;
+      for(i=0; i<BUF_SIZE;i++){
+        uint8_t tmp;
+        tmp = Serial.read();
+        if(tmp == -1)break;
+        else if(tmp == 0)break;
+        else tmpBuf[i] = tmp;
+      }
+      tmpSize = i;
+      //tmpSize = Serial.readBytesUntil(0x00, tmpBuf, BUF_SIZE);
       //tmpSize = Serial.readBytes(tmpBuf,BUF_SIZE);
 
       portENTER_CRITICAL(&mutex);
